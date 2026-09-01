@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f6f7f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1114" media="(prefers-color-scheme: dark)">
+<title>Word Selector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --ground: #f6f7f7;
+  --surface: #fcfdfd;
+  --surface-2: #f0f2f3;
+  --ink: #11161b;
+  --ink-2: #4c5560;
+  --muted: #898781;
+  --hairline: #e1e0d9;
+  --border: rgba(11,11,11,0.10);
+  --accent: #1c5cab;
+  --accent-ink: #ffffff;
+  --accent-soft: #e5eefb;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --good: #0ca30c;
+  --good-text: #006300;
+  --bad: #d03b3b;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --shadow: 0 1px 2px rgba(16,22,27,.05), 0 4px 14px rgba(16,22,27,.05);
+  --scroll-shadow: rgba(16,22,27,.16);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #0e1114;
+    --surface: #171b1f;
+    --surface-2: #1f2429;
+    --ink: #f2f4f6;
+    --ink-2: #aeb6bf;
+    --muted: #898781;
+    --hairline: #2c2c2a;
+    --border: rgba(255,255,255,0.10);
+    --accent: #5598e7;
+    --accent-ink: #0e1114;
+    --accent-soft: #1a2a40;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --good: #0ca30c;
+    --good-text: #0ca30c;
+    --bad: #e66767;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+    --scroll-shadow: rgba(0,0,0,.55);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #0e1114;
+  --surface: #171b1f;
+  --surface-2: #1f2429;
+  --ink: #f2f4f6;
+  --ink-2: #aeb6bf;
+  --muted: #898781;
+  --hairline: #2c2c2a;
+  --border: rgba(255,255,255,0.10);
+  --accent: #5598e7;
+  --accent-ink: #0e1114;
+  --accent-soft: #1a2a40;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --good: #0ca30c;
+  --good-text: #0ca30c;
+  --bad: #e66767;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  --scroll-shadow: rgba(0,0,0,.55);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.ar { font-family: "Amiri", "Traditional Arabic", serif; direction: rtl; }
+.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ---------- layout ---------- */
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px 80px; }
+header.top {
+  border-bottom: 1px solid var(--hairline);
+  background: var(--surface);
+}
+.top-inner {
+  max-width: 1180px; margin: 0 auto; padding: 18px 24px;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.brand { display: flex; align-items: baseline; gap: 12px; }
+.brand h1 { font-size: 20px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+.brand .ar-title { font-size: 22px; color: var(--ink-2); font-weight: 700; }
+.brand .rev { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; align-self: center; }
+.top-spacer { flex: 1; }
+
+/* cycle status */
+.cycle {
+  display: flex; align-items: center; gap: 14px;
+  font-size: 13px; color: var(--ink-2);
+}
+.cycle .dots { display: flex; gap: 4px; }
+.cycle .dot {
+  width: 14px; height: 8px; border-radius: 4px;
+  background: var(--surface-2); border: 1px solid var(--hairline);
+}
+.cycle .dot.done { background: var(--accent); border-color: var(--accent); }
+
+/* ---------- controls ---------- */
+.controls {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 22px 0 8px;
+}
+button {
+  font: inherit; cursor: pointer; border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface); color: var(--ink);
+  padding: 8px 16px; font-weight: 500;
+  transition: background .15s, border-color .15s, transform .1s;
+}
+button:hover { background: var(--surface-2); }
+button:active { transform: scale(.98); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary {
+  background: var(--accent); color: var(--accent-ink); border-color: transparent;
+  font-weight: 600; padding: 10px 22px; font-size: 15px;
+}
+button.primary:hover { filter: brightness(1.08); }
+button:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+button.danger:hover { color: var(--bad); border-color: var(--bad); }
+.controls .note { font-size: 13px; color: var(--ink-2); }
+.spinner {
+  display: inline-block; width: 13px; height: 13px; margin-right: 9px;
+  border: 2px solid currentColor; border-right-color: transparent;
+  border-radius: 50%; vertical-align: -2px;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- cards ---------- */
+section.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: var(--shadow);
+  padding: 20px 22px; margin-top: 20px;
+}
+section.card > h2 {
+  margin: 0 0 4px; font-size: 15px; font-weight: 600;
+}
+section.card > .sub { font-size: 12.5px; color: var(--muted); margin: 0 0 14px; }
+.eyebrow {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .09em; color: var(--muted); margin: 0 0 6px;
+}
+
+/* compliance */
+.verdict {
+  display: flex; align-items: center; gap: 8px 10px; margin: 6px 0 14px;
+  font-size: 14px; font-weight: 600; flex-wrap: wrap;
+}
+.verdict .pill {
+  padding: 4px 12px; border-radius: 999px; font-size: 13px;
+  white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis;
+}
+.verdict-note { font-size: 12.5px; color: var(--ink-2); margin: -6px 0 14px; }
+.verdict .pill.ok { background: color-mix(in srgb, var(--good) 14%, transparent); color: var(--good-text); }
+.verdict .pill.warn { background: color-mix(in srgb, var(--bad) 12%, transparent); color: var(--bad); }
+.grid-4 {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
+  gap: 16px;
+}
+table.mini { border-collapse: collapse; width: 100%; font-size: 13px; }
+table.mini th, table.mini td { padding: 4px 8px; text-align: left; }
+table.mini th { color: var(--muted); font-weight: 500; font-size: 12px; border-bottom: 1px solid var(--hairline); }
+table.mini td.num, table.mini th.num { text-align: right; }
+table.mini td .ok { color: var(--good-text); }
+table.mini td .miss { color: var(--bad); font-weight: 600; }
+
+/* stats grid */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: 16px;
+}
+.stat-block { background: var(--surface-2); border-radius: 10px; padding: 14px 16px; }
+.stat-block h3 { margin: 0 0 8px; font-size: 13px; font-weight: 600; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 14px; font-size: 13px; }
+.kv .k { color: var(--ink-2); }
+.kv .v { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* horizontal scroll containers get edge shadows when content overflows */
+.chart-wrap, .tbl-wrap {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  background:
+    linear-gradient(90deg, var(--surface) 35%, transparent) left / 44px 100%,
+    linear-gradient(270deg, var(--surface) 35%, transparent) right / 44px 100%,
+    linear-gradient(90deg, var(--scroll-shadow), transparent) left / 16px 100%,
+    linear-gradient(270deg, var(--scroll-shadow), transparent) right / 16px 100%;
+  background-repeat: no-repeat;
+  background-attachment: local, local, scroll, scroll;
+}
+
+/* charts */
+.chart-legend {
+  display: flex; gap: 18px; align-items: center;
+  font-size: 12.5px; color: var(--ink-2); margin: 2px 0 8px;
+}
+.chart-legend .sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.chart-legend .dash { display: inline-block; width: 14px; height: 3px; border-radius: 2px; margin-right: 6px; vertical-align: 2px; }
+svg text { font-family: "IBM Plex Sans", system-ui, sans-serif; }
+#tooltip {
+  position: fixed; pointer-events: none; z-index: 50; display: none;
+  background: var(--ink); color: var(--ground);
+  font-size: 12.5px; line-height: 1.45; padding: 6px 10px; border-radius: 7px;
+  box-shadow: var(--shadow); max-width: 260px;
+}
+
+/* words table */
+table.words { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+table.words th {
+  font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--muted); font-weight: 600; text-align: left;
+  padding: 8px 10px; border-bottom: 1px solid var(--axis);
+  white-space: nowrap;
+}
+table.words td { padding: 6px 10px; border-bottom: 1px solid var(--hairline); white-space: nowrap; }
+table.words td.num, table.words th.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.words td.spoken { font-family: "Amiri", serif; font-size: 21px; direction: rtl; text-align: right; line-height: 1.3; }
+table.words tr:hover td { background: var(--surface-2); }
+.play {
+  width: 32px; height: 32px; padding: 0; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; line-height: 1;
+}
+.play.playing { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+
+/* history */
+.hist-item {
+  display: flex; align-items: center; gap: 14px; padding: 8px 0;
+  border-bottom: 1px solid var(--hairline); font-size: 13.5px; flex-wrap: wrap;
+}
+.hist-item:last-child { border-bottom: none; }
+.hist-item .tag {
+  background: var(--accent-soft); color: var(--accent);
+  font-weight: 600; border-radius: 6px; padding: 2px 10px; font-size: 12.5px;
+}
+.hist-item .when { color: var(--muted); font-size: 12.5px; }
+.hist-item .sp { flex: 1; }
+.hist-item button { padding: 4px 12px; font-size: 12.5px; }
+
+/* toast */
+#toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: var(--ground); padding: 10px 18px;
+  border-radius: 9px; font-size: 13.5px; box-shadow: var(--shadow);
+  opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 60;
+  max-width: 90vw; text-align: center;
+}
+#toast.show { opacity: 1; }
+
+/* empty state */
+#empty {
+  margin-top: 40px; text-align: center; color: var(--ink-2);
+}
+#empty .big-ar { font-family: "Amiri", serif; font-size: 44px; color: var(--ink); margin-bottom: 8px; }
+#empty p { max-width: 60ch; margin: 6px auto; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+/* touch devices: comfortable targets */
+@media (pointer: coarse) {
+  button { min-height: 42px; }
+  .play { width: 42px; height: 42px; font-size: 14px; }
+  .hist-item button { min-height: 38px; }
+}
+
+@media (max-width: 900px) {
+  .wrap { padding: 0 18px 64px; }
+  .top-inner { padding: 14px 18px; }
+}
+
+@media (max-width: 640px) {
+  .brand .ar-title { display: none; }
+  .brand h1 { font-size: 18px; }
+  .wrap { padding: 0 14px 56px; }
+  .top-inner { padding: 12px 14px; gap: 10px; }
+  .cycle { width: 100%; justify-content: space-between; }
+  .controls { padding-top: 16px; }
+  .controls .primary { flex: 1 1 100%; }
+  .controls button:not(.primary) { flex: 1 1 auto; }
+  section.card { padding: 16px 14px; border-radius: 10px; }
+  table.words td.spoken { font-size: 18px; }
+  table.words th, table.words td { padding-left: 8px; padding-right: 8px; }
+  #empty .big-ar { font-size: 34px; }
+  .hist-item { gap: 8px 12px; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <h1>Word Selector</h1>
+      <span class="ar-title ar" lang="ar">منتقي الكلمات</span>
+      <span class="rev">Egan criteria · Rev 002</span>
+    </div>
+    <div class="top-spacer"></div>
+    <div class="cycle" id="cycleBox">
+      <span id="cycleText"></span>
+      <span class="dots" id="cycleDots" aria-hidden="true"></span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <button class="primary" id="btnGenerate">Generate 100-word list</button>
+    <button id="btnCsv" disabled>Download Excel</button>
+    <button id="btnDiscard" disabled>Discard this list</button>
+    <button class="danger" id="btnReset">Reset cycle</button>
+    <span class="note" id="poolNote"></span>
+  </div>
+
+  <div id="empty">
+    <div class="big-ar ar" lang="ar">فَحْص وضوح الكلام العربي</div>
+    <p><strong>Arabic speech-intelligibility word selector.</strong>
+    Each run draws 100 words from the 1,000-word database following J.&thinsp;J. Egan's seven
+    criteria: category &amp; syllable distribution, word-type distribution, commonness and
+    difficulty distributions, uniqueness, no repetition until the full database is used,
+    and separation of phonetically similar words.</p>
+    <p>Press <strong>Generate</strong> to draw the next list.</p>
+  </div>
+
+  <div id="results" hidden>
+    <section class="card" id="complianceCard">
+      <h2>Criteria compliance</h2>
+      <p class="sub">Achieved counts vs the design targets for this list</p>
+      <div class="verdict" id="verdictRow"></div>
+      <div class="grid-4" id="complianceGrid"></div>
+    </section>
+
+    <section class="card">
+      <h2>Statistics</h2>
+      <p class="sub">Equivalent to the Output Statistics master sheet, computed automatically</p>
+      <div class="stats-grid" id="statsGrid"></div>
+    </section>
+
+    <section class="card">
+      <h2>Commonness distribution</h2>
+      <p class="sub">How familiar the selected words are (score 1–2.75, lower = more common)</p>
+      <div class="chart-wrap" id="chartCommon"></div>
+    </section>
+
+    <section class="card">
+      <h2>Difficulty distribution</h2>
+      <p class="sub">Difficulty scores of the selected words (1–5)</p>
+      <div class="chart-wrap" id="chartDiff"></div>
+    </section>
+
+    <section class="card">
+      <h2>Letter occurrences</h2>
+      <p class="sub">Frequency of each Arabic letter in the selected words, against the optimal share of the language</p>
+      <div class="chart-legend">
+        <span><span class="sw" style="background:var(--series-1)"></span>Selected list</span>
+        <span><span class="dash" style="background:var(--series-2)"></span>Optimal count</span>
+      </div>
+      <div class="chart-wrap" id="chartLetters"></div>
+    </section>
+
+    <section class="card">
+      <h2>Selected words</h2>
+      <p class="sub" id="listMeta"></p>
+      <div class="tbl-wrap" id="wordsTableWrap"></div>
+    </section>
+  </div>
+
+  <section class="card" id="historyCard" hidden>
+    <h2>Lists generated this cycle</h2>
+    <p class="sub">Words already used are excluded from later draws until the cycle is reset</p>
+    <div id="historyList"></div>
+  </section>
+</div>
+
+<div id="tooltip" role="tooltip"></div>
+<div id="toast" role="status"></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
